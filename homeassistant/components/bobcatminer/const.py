@@ -3,6 +3,7 @@
 DOMAIN = "bobcatminer"
 
 CONFIG_HOST = "host"
+CONFIG_ANIMAL = "animal"
 
 # Attributes
 ATTR_SYNC_GAP = "sync_gap"

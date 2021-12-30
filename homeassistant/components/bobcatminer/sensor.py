@@ -12,6 +12,7 @@ from .const import (
     ATTR_MINER_IP,
     ATTR_MINER_TEMP,
     ATTR_SYNC_GAP,
+    CONFIG_ANIMAL,
     CONFIG_HOST,
     DOMAIN,
     ICON_SYNC_GAP,
@@ -29,8 +30,9 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 
     config = hass.data[DOMAIN][config_entry.entry_id]
     miner = Bobcat(config[CONFIG_HOST])
+
     entities = []
-    entities.append(BobcatMinerSensor(miner))
+    entities.append(BobcatMinerSensor(miner, config[CONFIG_ANIMAL]))
 
     async_add_entities(entities, True)
 
@@ -40,14 +42,15 @@ class BobcatMinerSensor(SensorEntity):
 
     _attr_icon = ICON_SYNC_GAP
 
-    def __init__(self, bobcat):
+    def __init__(self, bobcat, animal):
         """Initialize miner sensor."""
         super().__init__()
 
         self.bobcat = bobcat
+
         self._attr_extra_state_attributes = {}
         self._attr_unique_id = "bobcatminer"
-        self._attr_name = f"bobcat_miner_{bobcat.miner_ip}"
+        self._attr_name = animal.replace("-", " ").title()
         self._attr_extra_state_attributes[ATTR_MINER_IP] = bobcat.miner_ip
         self._available = True
         self._state = None
