@@ -42,7 +42,7 @@ class BobcatMinerSensor(SensorEntity):
 
     @property
     def available(self):
-        """Return if sensor is available."""
+        """Return sensor availability."""
         return self._available
 
     @property
