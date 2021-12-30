@@ -10,7 +10,7 @@ from .const import CONFIG_HOST, DOMAIN
 SCAN_INTERVAL = timedelta(minutes=10)
 
 SENSORS = {
-    "syncgap": "mdi:emoticon-neutral-outline",
+    "syncgap": "mdi:cloud-sync",
 }
 
 
