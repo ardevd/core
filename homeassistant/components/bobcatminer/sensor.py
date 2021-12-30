@@ -5,7 +5,15 @@ from bobcatpy import Bobcat
 
 from homeassistant.components.sensor import SensorEntity
 
-from .const import CONFIG_HOST, DOMAIN, ICON_SYNC_GAP
+from .const import (
+    ATTR_BLOCKCHAIN_HEIGHT,
+    ATTR_EPOCH,
+    ATTR_MINER_HEIGHT,
+    ATTR_SYNC_GAP,
+    CONFIG_HOST,
+    DOMAIN,
+    ICON_SYNC_GAP,
+)
 
 SCAN_INTERVAL = timedelta(minutes=10)
 
@@ -28,7 +36,6 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 class BobcatMinerSensor(SensorEntity):
     """Sensor representing a bobcat miner."""
 
-    _attr_native_unit_of_measurement = "blocks"
     _attr_icon = ICON_SYNC_GAP
 
     def __init__(self, bobcat):
@@ -36,6 +43,7 @@ class BobcatMinerSensor(SensorEntity):
         super().__init__()
 
         self.bobcat = bobcat
+        self._attr_extra_state_attributes = {}
         self._attr_unique_id = "bobcatminer"
         self._attr_name = "Bobcat Miner"
         self._available = True
@@ -59,5 +67,16 @@ class BobcatMinerSensor(SensorEntity):
         """State of the sensor."""
         sync_status = self.bobcat.sync_status()
 
-        self._state = sync_status["gap"]
+        # Set state to miner status
+        self._state = sync_status["status"]
+
+        # Set miner attributes
+        self._attr_extra_state_attributes[ATTR_SYNC_GAP] = sync_status["gap"]
+        self._attr_extra_state_attributes[ATTR_EPOCH] = sync_status["epoch"]
+        self._attr_extra_state_attributes[ATTR_MINER_HEIGHT] = sync_status[
+            "miner_height"
+        ]
+        self._attr_extra_state_attributes[ATTR_BLOCKCHAIN_HEIGHT] = sync_status[
+            "blockchain_height"
+        ]
         self._available = True
