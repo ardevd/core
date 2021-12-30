@@ -45,7 +45,7 @@ class BobcatMinerSensor(SensorEntity):
         self.bobcat = bobcat
         self._attr_extra_state_attributes = {}
         self._attr_unique_id = "bobcatminer"
-        self._attr_name = "Bobcat Miner"
+        self._attr_name = f"bobcat_miner_{bobcat.miner_ip}"
         self._available = True
         self._state = None
 
