@@ -40,6 +40,7 @@ FLOWS = [
     "blebox",
     "blink",
     "bmw_connected_drive",
+    "bobcatminer",
     "bond",
     "bosch_shc",
     "braviatv",
