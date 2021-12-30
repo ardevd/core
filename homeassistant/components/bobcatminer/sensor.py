@@ -9,6 +9,8 @@ from .const import (
     ATTR_BLOCKCHAIN_HEIGHT,
     ATTR_EPOCH,
     ATTR_MINER_HEIGHT,
+    ATTR_MINER_IP,
+    ATTR_MINER_TEMP,
     ATTR_SYNC_GAP,
     CONFIG_HOST,
     DOMAIN,
@@ -46,6 +48,7 @@ class BobcatMinerSensor(SensorEntity):
         self._attr_extra_state_attributes = {}
         self._attr_unique_id = "bobcatminer"
         self._attr_name = f"bobcat_miner_{bobcat.miner_ip}"
+        self._attr_extra_state_attributes[ATTR_MINER_IP] = bobcat.miner_ip
         self._available = True
         self._state = None
 
@@ -66,6 +69,7 @@ class BobcatMinerSensor(SensorEntity):
     def update(self):
         """State of the sensor."""
         sync_status = self.bobcat.sync_status()
+        temp_status = self.bobcat.temps()
 
         # Set state to miner status
         self._state = sync_status["status"]
@@ -79,4 +83,6 @@ class BobcatMinerSensor(SensorEntity):
         self._attr_extra_state_attributes[ATTR_BLOCKCHAIN_HEIGHT] = sync_status[
             "blockchain_height"
         ]
+
+        self._attr_extra_state_attributes[ATTR_MINER_TEMP] = temp_status["temp0"]
         self._available = True
