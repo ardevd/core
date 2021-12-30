@@ -5,12 +5,12 @@ from bobcatpy import Bobcat
 
 from homeassistant.components.sensor import SensorEntity
 
-from .const import CONFIG_HOST, DOMAIN
+from .const import CONFIG_HOST, DOMAIN, ICON_SYNC_GAP
 
 SCAN_INTERVAL = timedelta(minutes=10)
 
 SENSORS = {
-    "syncgap": "mdi:cloud-sync",
+    "syncgap": ICON_SYNC_GAP,
 }
 
 
@@ -29,6 +29,7 @@ class BobcatMinerSensor(SensorEntity):
     """Sensor representing a bobcat miner."""
 
     _attr_native_unit_of_measurement = "blocks"
+    _attr_icon = ICON_SYNC_GAP
 
     def __init__(self, bobcat):
         """Initialize miner sensor."""
