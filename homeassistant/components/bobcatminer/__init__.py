@@ -1,14 +1,25 @@
 """The Bobcat Miner integration."""
 from __future__ import annotations
 
+from datetime import timedelta
+import logging
+
+from bobcatpy import Bobcat
+from voluptuous.error import Error
+
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
-from .const import DOMAIN
+from .const import CONFIG_HOST, DOMAIN
+
+_LOGGER = logging.getLogger(__name__)
+
+SCAN_INTERVAL = timedelta(minutes=6)
 
 # Supported platforms
-PLATFORMS = [Platform.SENSOR]
+PLATFORMS: list[Platform] = [Platform.SENSOR]
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -19,11 +30,32 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.data.setdefault(DOMAIN, {})
 
     hass_data = dict(entry.data)
-    hass.data[DOMAIN][entry.entry_id] = hass_data
-    # Forward the setup to the sensor platform.
-    hass.async_create_task(
-        hass.config_entries.async_forward_entry_setup(entry, "sensor")
+    bobcat = Bobcat(hass_data[CONFIG_HOST])
+
+    async def _update_method():
+        """Get the latest data from Bobcat Miner."""
+        try:
+            # TODO: Create a merged output dict containing miner info
+            return await hass.async_add_executor_job(bobcat.status_summary)
+        except Error as err:
+            raise UpdateFailed(f"Unable to fetch data: {err}") from err
+
+    coordinator = DataUpdateCoordinator(
+        hass,
+        _LOGGER,
+        name=DOMAIN,
+        update_method=_update_method,
+        update_interval=SCAN_INTERVAL,
     )
+
+    await coordinator.async_config_entry_first_refresh()
+    hass.data[DOMAIN][entry.entry_id] = coordinator
+
+    hass.config_entries.async_setup_platforms(entry, PLATFORMS)
+    # Forward the setup to the sensor platform.
+    # hass.async_create_task(
+    #    hass.config_entries.async_forward_entry_setup(entry, PLATFORMS)
+    # )
     return True
 
 

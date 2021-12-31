@@ -1,58 +1,87 @@
 """Sensor platform for the Bobcat Miner."""
 from datetime import timedelta
+from typing import Dict
 
-from bobcatpy import Bobcat
-
-from homeassistant.components.sensor import SensorEntity
-
-from .const import (
-    ATTR_BLOCKCHAIN_HEIGHT,
-    ATTR_EPOCH,
-    ATTR_MINER_HEIGHT,
-    ATTR_MINER_IP,
-    ATTR_MINER_TEMP,
-    ATTR_SYNC_GAP,
-    CONFIG_ANIMAL,
-    CONFIG_HOST,
-    DOMAIN,
-    ICON_SYNC_GAP,
+from homeassistant.components.sensor import (
+    SensorDeviceClass,
+    SensorEntity,
+    SensorEntityDescription,
 )
+from homeassistant.helpers.entity import DeviceInfo
+from homeassistant.helpers.update_coordinator import (
+    CoordinatorEntity,
+    DataUpdateCoordinator,
+)
+
+from .const import DOMAIN
 
 SCAN_INTERVAL = timedelta(minutes=10)
 
-SENSORS = {
-    "syncgap": ICON_SYNC_GAP,
+SENSORS: Dict[str, SensorEntityDescription] = {
+    "sync_gap": SensorEntityDescription(
+        key="sync_gap",
+        native_unit_of_measurement="blocks",
+        name="Sync Gap",
+        icon="mdi:cloud-sync",
+    ),
+    "miner_height": SensorEntityDescription(
+        key="miner_height",
+        native_unit_of_measurement="blocks",
+        name="Miner Height",
+        icon="mdi:progress-star",
+    ),
+    "temp": SensorEntityDescription(
+        key="temp",
+        device_class=SensorDeviceClass.TEMPERATURE,
+        name="Temperature",
+    ),
+    "ota_version": SensorEntityDescription(
+        key="ota_version", name="OTA Version", icon="mdi:cloud-tags"
+    ),
+    "public_ip": SensorEntityDescription(
+        key="public_ip", name="Public IP", icon="mdi:ip-network"
+    ),
+    "state": SensorEntityDescription(key="state", name="State", icon="mdi:console"),
 }
 
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
     """Sensor setup based on config entry created in the integrations UI."""
 
-    config = hass.data[DOMAIN][config_entry.entry_id]
-    miner = Bobcat(config[CONFIG_HOST])
+    coordinator: DataUpdateCoordinator = hass.data[DOMAIN][config_entry.entry_id]
 
     entities = []
-    entities.append(BobcatMinerSensor(miner, config[CONFIG_ANIMAL]))
+    for sensor in SENSORS.values():
+        entities.append(BobcatMinerSensor(coordinator, sensor))
 
     async_add_entities(entities, True)
 
 
-class BobcatMinerSensor(SensorEntity):
+class BobcatMinerSensor(CoordinatorEntity, SensorEntity):
     """Sensor representing a bobcat miner."""
 
-    _attr_icon = ICON_SYNC_GAP
-
-    def __init__(self, bobcat, animal):
+    def __init__(
+        self,
+        coordinator: DataUpdateCoordinator,
+        entity_description: SensorEntityDescription,
+    ):
         """Initialize miner sensor."""
-        super().__init__()
+        super().__init__(coordinator)
+        animal = coordinator.data["animal"]
+        readable_animal = animal.replace("-", " ").title()
 
-        self.bobcat = bobcat
+        self.entity_description = entity_description
 
         self._attr_extra_state_attributes = {}
-        self._attr_unique_id = "bobcatminer"
-        self._attr_name = animal.replace("-", " ").title()
-        self._attr_extra_state_attributes[ATTR_MINER_IP] = bobcat.miner_ip
+        self._attr_unique_id = f"{readable_animal} {entity_description.key}"
+        self._id = animal
+        self._attr_name = f"{readable_animal} {entity_description.name}"
         self._available = True
+        self._attr_device_info = DeviceInfo(
+            identifiers={(DOMAIN, animal)},
+            name=readable_animal,
+            manufacturer="Bobcat",
+        )
         self._state = None
 
     @property
@@ -63,29 +92,4 @@ class BobcatMinerSensor(SensorEntity):
     @property
     def native_value(self):
         """Return the state of the sensor."""
-        return self._state
-
-    def get_sync_status(self):
-        """Get miner sync status."""
-        return self.bobcat.sync_status()
-
-    def update(self):
-        """State of the sensor."""
-        sync_status = self.bobcat.sync_status()
-        temp_status = self.bobcat.temps()
-
-        # Set state to miner status
-        self._state = sync_status["status"]
-
-        # Set miner attributes
-        self._attr_extra_state_attributes[ATTR_SYNC_GAP] = sync_status["gap"]
-        self._attr_extra_state_attributes[ATTR_EPOCH] = sync_status["epoch"]
-        self._attr_extra_state_attributes[ATTR_MINER_HEIGHT] = sync_status[
-            "miner_height"
-        ]
-        self._attr_extra_state_attributes[ATTR_BLOCKCHAIN_HEIGHT] = sync_status[
-            "blockchain_height"
-        ]
-
-        self._attr_extra_state_attributes[ATTR_MINER_TEMP] = temp_status["temp0"]
-        self._available = True
+        return self.coordinator.data[self.entity_description.key]

@@ -4,7 +4,6 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from bobcatpy import Bobcat
 import voluptuous as vol
 
 from homeassistant import config_entries
@@ -13,7 +12,7 @@ from homeassistant.data_entry_flow import FlowResult
 from homeassistant.exceptions import HomeAssistantError
 import homeassistant.helpers.config_validation as cv
 
-from .const import CONFIG_ANIMAL, CONFIG_HOST, DOMAIN
+from .const import CONFIG_HOST, DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -45,12 +44,7 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str,
 
     # Return info that you want to store in the config entry.
 
-    miner_status = await hass.async_add_executor_job(
-        Bobcat(data[CONFIG_HOST]).miner_status
-    )
-    data[CONFIG_ANIMAL] = miner_status["animal"]
-    animal_prettified = data[CONFIG_ANIMAL].replace("-", " ").title()
-    return {"title": animal_prettified}
+    return {"title": "Bobcat Miner"}
 
 
 class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
