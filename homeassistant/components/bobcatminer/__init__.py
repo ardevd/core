@@ -24,8 +24,6 @@ PLATFORMS: list[Platform] = [Platform.SENSOR]
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Bobcat Miner from a config entry."""
-    # TODO Store an API object for your platforms to access
-    # hass.data[DOMAIN][entry.entry_id] = MyApi(...)
 
     hass.data.setdefault(DOMAIN, {})
 
@@ -35,7 +33,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     async def _update_method():
         """Get the latest data from Bobcat Miner."""
         try:
-            # TODO: Create a merged output dict containing miner info
             return await hass.async_add_executor_job(bobcat.status_summary)
         except Error as err:
             raise UpdateFailed(f"Unable to fetch data: {err}") from err
