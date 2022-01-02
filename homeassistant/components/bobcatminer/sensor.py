@@ -16,7 +16,7 @@ from homeassistant.helpers.update_coordinator import (
 
 from .const import DOMAIN
 
-SCAN_INTERVAL = timedelta(minutes=10)
+SCAN_INTERVAL = timedelta(minutes=15)
 
 SENSORS: Dict[str, SensorEntityDescription] = {
     "sync_gap": SensorEntityDescription(
