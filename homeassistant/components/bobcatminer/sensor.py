@@ -40,6 +40,9 @@ SENSORS: Dict[str, SensorEntityDescription] = {
     "ota_version": SensorEntityDescription(
         key="ota_version", name="OTA Version", icon="mdi:cloud-tags"
     ),
+    "image": SensorEntityDescription(
+        key="image", name="Miner Image", icon="mdi:docker"
+    ),
     "public_ip": SensorEntityDescription(
         key="public_ip", name="Public IP", icon="mdi:ip-network"
     ),

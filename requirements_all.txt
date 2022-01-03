@@ -426,7 +426,7 @@ blockchain==1.4.4
 # bme680==1.0.5
 
 # homeassistant.components.bobcatminer
-bobcatpy==1.0.3
+bobcatpy==1.0.4
 
 # homeassistant.components.bond
 bond-api==0.1.15
